@@ -1,0 +1,7 @@
+{
+  "AWSAccessKeyId": "ID KEY",
+  "AWSSecretKey":   "SECRET KEY",
+  "S3Bucket":       "my-bucket-name",
+  "access":         "public-read",
+  "CloudFrontId":   "my-cloudfront-dist-id"
+}
