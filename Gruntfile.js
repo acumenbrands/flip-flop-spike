@@ -1,7 +1,9 @@
 module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-img');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-aws');
@@ -19,7 +21,11 @@ module.exports = function(grunt) {
         options: {
           ui: 'bdd',
           reporter: 'spec',
-          require: './tests/helpers/chai'
+          require: [
+            './tests/helpers/chai.js',
+            './tests/helpers/sinon.js',
+            './tests/helpers/integration.js'
+          ]
         },
         src: ['tests/integration/tests.js']
       }
@@ -62,6 +68,25 @@ module.exports = function(grunt) {
       }
     },
 
+    cssmin: {
+      target: {
+        files: [{
+          expand: true,
+          cwd: 'assets/css',
+          src: ['*.css', '!*.min.css'],
+          dest: 'build/css',
+          ext: '.min.css'
+        }]
+      }
+    },
+
+    img: {
+      compress: {
+        src: ['assets/images/*.png', 'assets/images/*.jpg'],
+        dest: 'build/images'
+      },
+    },
+
     s3: {
       options: {
         //dryRun: true,
@@ -96,7 +121,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('build', ['jshint', 'browserify']);
   grunt.registerTask('test', ['build', 'mochaTest']);
-  grunt.registerTask('export', ['uglify']);
+  grunt.registerTask('export', ['uglify', 'cssmin', 'img']);
 
   grunt.registerTask('default', ['test', 'export']);
   grunt.registerTask('aws', ['s3', 'cloudfront']);
