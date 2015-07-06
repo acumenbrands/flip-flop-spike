@@ -99,10 +99,10 @@
 
     var _getCoupon = function(cookieString) {
       var couponRE      = /coupon_code=([^\s;]*)/gi;
-      var couponResults = couponRE.exec(cookieString) || [null];
+      var couponResults = couponRE.exec(cookieString) || [""];
       var couponCode    = couponResults.reverse()[0];
 
-      return couponCode;
+      return couponCode.toLowerCase();
     };
 
     var _getCookie = function(env) {
@@ -199,7 +199,7 @@
         coupon:      _args.coupon,
         strategy:    function() {
           return (
-            (_context.application.coupon !== null) &&
+            (_context.application.coupon) &&
             (_context.application.coupon != _args.coupon)
           );
         },
@@ -701,7 +701,7 @@
         environment:         _environment,
         qualifyingCartValue: 100,
         settingsKey:         'FlipFlopSpike',
-        coupon:              'SPIKECOUPON',
+        coupon:              'RNRGIFT',
         specialURL:          '/redneck-riviera-collection/sandals',
         tagMatch:            /^redneck\-riviera\-collection/i
       });
@@ -725,7 +725,7 @@
   var Notifier = (function() {
     function Notifier(_args) {
       this.application = _args.application;
-      this.coupon      = _args.coupon || '';
+      this.coupon      = _normalizeCoupon(_args);
       this.contexts    = _args.contexts;
       this.context     = this.getContext();
 
@@ -741,12 +741,20 @@
 
       for (var i=0, len=this.contexts.length; i<len; i++) {
         var contextClass = this.contexts[i];
-        var context = new contextClass(contextOptions);
+        var context      = new contextClass(contextOptions);
 
         if (context.isApplicable()) {
           return context;
         }
       }
+    };
+
+    var _normalizeCoupon = function(args) {
+      var coupon = "";
+      if (args && 'coupon' in args) {
+        coupon = args.coupon;
+      }
+      return coupon.toLowerCase();
     };
 
     var _noop = function() {};
