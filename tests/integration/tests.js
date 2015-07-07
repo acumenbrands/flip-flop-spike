@@ -129,6 +129,10 @@ describe('Context: Cart qualifies', function() {
     this.subject.context.perform();
     expect(this.settingsIsQualifiedSpy.called).to.equal(true);
   });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
+  });
 });
 
 describe('Context: Cart with qualifier', function() {
@@ -176,6 +180,10 @@ describe('Context: Cart with qualifier', function() {
   it('places a notification', function() {
     this.subject.context.perform();
     expect(this.placeNoticeSpy.called).to.equal(true);
+  });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
   });
 });
 
@@ -226,6 +234,10 @@ describe('Context: Cart without qualifier', function() {
     this.subject.context.perform();
     expect(this.placeNoticeSpy.called).to.equal(true);
   });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
+  });
 });
 
 describe('Context: Home page view', function() {
@@ -255,36 +267,9 @@ describe('Context: Home page view', function() {
     this.subject.context.perform();
     expect(this.setCouponSpy.called).to.equal(true);
   });
-});
-
-describe('Context: Special category view', function() {
-  before(function() {
-    var specialURL    = '/redneck-riviera-collection/sandals';
-    var mockWindow    = new MockWindow();
-    var loaderOptions = {
-      coupon:      'THECOUPON',
-      specialURL:  specialURL,
-      environment: mockWindow
-    };
-
-    mockWindow.location.pathname = specialURL;
-    mockWindow.document.cookie   = 'foo=bar; biz=baz';
-
-    this.subject        = new Loader(loaderOptions);
-    this.placeNoticeSpy = sinon.spy(this.subject.context.application.document, 'placeNotice');
-    this.setCouponSpy   = sinon.spy(this.subject.context.application, 'setCoupon');
-  });
-
-  it('performs when route is special category route', function() {
-    expect(this.subject.context.type).to.equal('views_special_category');
-  });
-  it('places a notification', function() {
-    this.subject.context.perform();
-    expect(this.placeNoticeSpy.called).to.equal(true);
-  });
-  it('sets a coupon', function() {
-    this.subject.context.perform();
-    expect(this.setCouponSpy.called).to.equal(true);
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
   });
 });
 
@@ -316,6 +301,10 @@ describe('Context: Special category view', function() {
   it('sets a coupon', function() {
     this.subject.context.perform();
     expect(this.setCouponSpy.called).to.equal(true);
+  });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
   });
 });
 
@@ -349,6 +338,10 @@ describe('Context: Category view', function() {
     this.subject.context.perform();
     expect(this.setCouponSpy.called).to.equal(true);
   });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
+  });
 });
 
 describe('Context: Product view', function() {
@@ -379,5 +372,9 @@ describe('Context: Product view', function() {
   it('sets a coupon', function() {
     this.subject.context.perform();
     expect(this.setCouponSpy.called).to.equal(true);
+  });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
   });
 });

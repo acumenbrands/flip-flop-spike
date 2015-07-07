@@ -1,7 +1,8 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
-  var ApplicationSettingsAdapter = require('./application_settings_adapter');
-  var ApplicationDocumentAdapter = require('./application_document_adapter');
+  var ApplicationSettingsAdapter  = require('./application_settings_adapter');
+  var ApplicationDocumentAdapter  = require('./application_document_adapter');
+  var HonestEngineTrackingAdapter = require('./honest_engine_tracking_adapter');
 
   var ApplicationAdapter = (function() {
     function ApplicationAdapter(_args) {
@@ -19,6 +20,7 @@
 
       this.document            = new ApplicationDocumentAdapter(_applicationAdapter);
       this.settings            = new ApplicationSettingsAdapter(_applicationAdapter);
+      this.tracking            = new HonestEngineTrackingAdapter(_applicationAdapter);
     }
 
     ApplicationAdapter.prototype.setCoupon = function (code) {
@@ -123,7 +125,7 @@
   module.exports = ApplicationAdapter;
 }).call(this);
 
-},{"./application_document_adapter":2,"./application_settings_adapter":3}],2:[function(require,module,exports){
+},{"./application_document_adapter":2,"./application_settings_adapter":3,"./honest_engine_tracking_adapter":4}],2:[function(require,module,exports){
 (function() {
   var ApplicationDocumentAdapter = (function() {
     function ApplicationDocumentAdapter(_application) {
@@ -185,7 +187,35 @@
   module.exports = ApplicationSettingsAdapter;
 }).call(this);
 
-},{"../repositories/storage":18}],4:[function(require,module,exports){
+},{"../repositories/storage":19}],4:[function(require,module,exports){
+(function() {
+  var HonestEngineTrackingAdapter = (function() {
+    function HonestEngineTrackingAdapter(_application) {
+      this.dataLayer = _getDataLayer(_application.environment);
+    }
+
+    HonestEngineTrackingAdapter.prototype.trackContext = function(_context) {
+      var trackingEvent = {
+        "event":       "flip-flop-spike-context",
+        "contextType": _context.type
+      };
+      this.dataLayer.push(trackingEvent);
+    };
+
+    var _getDataLayer = function(env) {
+      if (!('dataLayer' in env)) {
+        env.dataLayer = [];
+      }
+      return env.dataLayer;
+    };
+
+    return HonestEngineTrackingAdapter;
+  })();
+
+  module.exports = HonestEngineTrackingAdapter;
+}).call(this);
+
+},{}],5:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
 
@@ -217,7 +247,7 @@
   module.exports = CartHasOtherCoupon;
 }).call(this);
 
-},{"../factories/context":13}],5:[function(require,module,exports){
+},{"../factories/context":14}],6:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
 
@@ -238,6 +268,7 @@
         },
         perform: function() {
           _context.application.settings.setQualified();
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -250,7 +281,7 @@
   module.exports = CartQualifies;
 }).call(this);
 
-},{"../factories/context":13}],6:[function(require,module,exports){
+},{"../factories/context":14}],7:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -285,6 +316,7 @@
 
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -297,7 +329,7 @@
   module.exports = CartQualifies;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],7:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],8:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -332,6 +364,7 @@
 
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -344,7 +377,7 @@
   module.exports = CartWithoutQualifier;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],8:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],9:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
 
@@ -371,7 +404,7 @@
   module.exports = DefaultContext;
 }).call(this);
 
-},{"../factories/context":13}],9:[function(require,module,exports){
+},{"../factories/context":14}],10:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -404,6 +437,7 @@
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
           _context.application.setCoupon(_args.coupon);
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -416,7 +450,7 @@
   module.exports = ViewsCategory;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],10:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],11:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -448,6 +482,7 @@
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
           _context.application.setCoupon(_args.coupon);
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -460,7 +495,7 @@
   module.exports = ViewsHome;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],11:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],12:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -493,6 +528,7 @@
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
           _context.application.setCoupon(_args.coupon);
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -505,7 +541,7 @@
   module.exports = ViewsProduct;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],12:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],13:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -538,6 +574,7 @@
           _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
           _context.application.setCoupon(_args.coupon);
+          _context.application.tracking.trackContext(this);
         }
       };
 
@@ -550,7 +587,7 @@
   module.exports = ViewsSpecialCategory;
 }).call(this);
 
-},{"../factories/context":13,"../factories/notice":14}],13:[function(require,module,exports){
+},{"../factories/context":14,"../factories/notice":15}],14:[function(require,module,exports){
 (function() {
   var ContextFactory = (function(){
     function ContextFactory(_args) {
@@ -582,7 +619,7 @@
   module.exports = ContextFactory;
 }).call(this);
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
   var NoticeFactory = (function(){
     function NoticeFactory(_args) {
@@ -636,7 +673,7 @@
   module.exports = NoticeFactory;
 }).call(this);
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
   var Notifier             = require('./notifier');
   var ApplicationAdapter   = require('./adapters/application_adapter');
@@ -689,7 +726,7 @@
   module.exports = Loader;
 }).call(this);
 
-},{"./adapters/application_adapter":1,"./contexts/cart_has_other_coupon":4,"./contexts/cart_qualifies":5,"./contexts/cart_with_qualifier":6,"./contexts/cart_without_qualifier":7,"./contexts/default":8,"./contexts/views_category":9,"./contexts/views_home":10,"./contexts/views_product":11,"./contexts/views_special_category":12,"./notifier":17}],16:[function(require,module,exports){
+},{"./adapters/application_adapter":1,"./contexts/cart_has_other_coupon":5,"./contexts/cart_qualifies":6,"./contexts/cart_with_qualifier":7,"./contexts/cart_without_qualifier":8,"./contexts/default":9,"./contexts/views_category":10,"./contexts/views_home":11,"./contexts/views_product":12,"./contexts/views_special_category":13,"./notifier":18}],17:[function(require,module,exports){
 (function (global){
 (function() {
   var FlipFlopSpike = require('./loader');
@@ -720,7 +757,7 @@
 }).call(this);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./loader":15}],17:[function(require,module,exports){
+},{"./loader":16}],18:[function(require,module,exports){
 (function() {
   var Notifier = (function() {
     function Notifier(_args) {
@@ -765,7 +802,7 @@
   module.exports = Notifier;
 }).call(this);
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function() {
   var Storage = (function() {
     function Storage(_args) {
@@ -790,4 +827,4 @@
   module.exports = Storage;
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]);
