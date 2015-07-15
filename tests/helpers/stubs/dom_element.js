@@ -6,6 +6,7 @@
       }
       this.childNodes    = this.childNodes || [];
       this.className     = this.className || 'class-name';
+      this.classList     = this.className.split(' ');
       this.parentElement = {
         insertBefore: function(p, n) {
           return new MockDomElement({tagName: 'div'});

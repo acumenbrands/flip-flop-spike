@@ -1,12 +1,13 @@
 module.exports = function(grunt) {
 
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-aws');
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-img');
-  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-mocha-test');
-  grunt.loadNpmTasks('grunt-aws');
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -89,7 +90,7 @@ module.exports = function(grunt) {
 
     s3: {
       options: {
-        //dryRun: true,
+        // dryRun: true,
         accessKeyId: "<%= aws.AWSAccessKeyId %>",
         secretAccessKey: "<%= aws.AWSSecretKey %>",
         bucket: "<%= aws.S3Bucket %>",
@@ -113,6 +114,36 @@ module.exports = function(grunt) {
           invalidations: [
             "/libs/flip-flop-spike/<%= pkg.version %>/*"
           ]
+        }
+      }
+    },
+
+    watch: {
+      js: {
+        files: ['lib/**/*.js', 'tests/**/*.js'],
+        tasks: ['test', 'uglify'],
+        options: {
+          spawn: false,
+        },
+      },
+      css: {
+        files: ['assets/**/*.css'],
+        tasks: ['cssmin'],
+        options: {
+          spawn: false,
+        },
+      },
+      images: {
+        files: ['assets/**/*.svg', 'assets/**/*.jpg', 'assets/**/*.png', 'assets/**/*.gif'],
+        tasks: ['img'],
+        options: {
+          spawn: false,
+        },
+      },
+      configFiles: {
+        files: [ 'Gruntfile.js', 'config/*.json' ],
+        options: {
+          reload: true
         }
       }
     }

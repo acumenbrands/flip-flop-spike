@@ -17,7 +17,16 @@
           removeItem: function(a) { return undefined; }
         },
         document:  new MockDomElement(mockDocumentOptions),
-        dataLayer: [{}, {}]
+        dataLayer: [
+          {},
+          {
+            behavioralIntent: {
+              product: {
+                tags: ['blue', 'flip-flops', 'red']
+              }
+            }
+          }
+        ]
       };
 
       for(var arg in _args){

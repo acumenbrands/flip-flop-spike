@@ -51,6 +51,32 @@
       return productMatch.test(this.route);
     };
 
+    ApplicationAdapter.prototype.pageIsSpecialProduct = function () {
+      return (this.isDesktopSpecialProduct() || this.isMobileSpecialProduct());
+    };
+
+    ApplicationAdapter.prototype.isDesktopSpecialProduct = function() {
+      var isSpecial = false;
+      var classList = this.environment.document.body.classList;
+
+      for(var i=0; i<classList.length; i++) {
+        if (this.tagMatch.test(classList[i].replace('tag-',''))) isSpecial = true;
+      }
+
+      return isSpecial;
+    };
+
+    ApplicationAdapter.prototype.isMobileSpecialProduct = function() {
+      var isSpecial = false;
+      var tagList = this.environment.dataLayer[1].behavioralIntent.product.tags;
+
+      for(var i=0; i<tagList.length; i++) {
+        if (this.tagMatch.test(tagList[i])) isSpecial = true;
+      }
+
+      return isSpecial;
+    };
+
     ApplicationAdapter.prototype.cartHasQualifyingProduct = function () {
       var behavior = _getDataLayerObject('behavioralIntent', this.environment);
 
@@ -187,7 +213,7 @@
   module.exports = ApplicationSettingsAdapter;
 }).call(this);
 
-},{"../repositories/storage":19}],4:[function(require,module,exports){
+},{"../repositories/storage":20}],4:[function(require,module,exports){
 (function() {
   var HonestEngineTrackingAdapter = (function() {
     function HonestEngineTrackingAdapter(_application) {
@@ -221,10 +247,12 @@
 
   var CartHasOtherCoupon = (function(){
     function CartHasOtherCoupon(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'cart_has_other_coupon';
+
       var _context       = this;
       var contextOptions = {
-        type:        'cart_has_other_coupon',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -247,16 +275,18 @@
   module.exports = CartHasOtherCoupon;
 }).call(this);
 
-},{"../factories/context":14}],6:[function(require,module,exports){
+},{"../factories/context":15}],6:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
 
   var CartQualifies = (function(){
     function CartQualifies(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'cart_qualifies';
+
       var _context       = this;
       var contextOptions = {
-        type:        'cart_qualifies',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -281,17 +311,19 @@
   module.exports = CartQualifies;
 }).call(this);
 
-},{"../factories/context":14}],7:[function(require,module,exports){
+},{"../factories/context":15}],7:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
 
   var CartQualifies = (function(){
     function CartQualifies(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'cart_with_qualifier';
+
       var _context       = this;
       var contextOptions = {
-        type:        'cart_with_qualifier',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -302,9 +334,10 @@
         },
         perform: function() {
           var noticeOptions = {
+            context:     _context,
             environment: _context.application.environment,
             style:       'back',
-            headline:    'Get your pair of<br>flip flops Free with<br>$100 purchase',
+            headline:    'Get your pair of<br>flip flops Free with<br>$' + _context.application.qualifyingCartValue + ' purchase',
             buttonText:  '',
             href:        '/footwear'
           };
@@ -329,17 +362,19 @@
   module.exports = CartQualifies;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],8:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],8:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
 
   var CartWithoutQualifier = (function(){
     function CartWithoutQualifier(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'cart_without_qualifier';
+
       var _context       = this;
       var contextOptions = {
-        type:        'cart_without_qualifier',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -350,9 +385,10 @@
         },
         perform: function() {
           var noticeOptions = {
+            context:     _context,
             environment: _context.application.environment,
             style:       'back',
-            headline:    'Get a free pair <br class="mobile-only"> of flip flops <br class="desktop-only"> with <br class="mobile-only"> $100 purchase',
+            headline:    'Get a free pair <br class="mobile-only"> of flip flops <br class="desktop-only"> with <br class="mobile-only"> $' + _context.application.qualifyingCartValue + ' purchase',
             buttonText:  '',
             href:        _context.application.specialURL
           };
@@ -377,15 +413,18 @@
   module.exports = CartWithoutQualifier;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],9:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],9:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
 
   var DefaultContext = (function(){
     function DefaultContext(_args) {
+      this.application = _args.application;
+      this.type        = 'default';
+
       var _context       = this;
       var contextOptions = {
-        type:        'default',
+        type:        _context.type,
         application: _args.application,
         coupon:      _args.coupon,
         strategy: function() {
@@ -404,17 +443,19 @@
   module.exports = DefaultContext;
 }).call(this);
 
-},{"../factories/context":14}],10:[function(require,module,exports){
+},{"../factories/context":15}],10:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
 
   var ViewsCategory = (function(){
     function ViewsCategory(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'views_category';
+
       var _context       = this;
       var contextOptions = {
-        type:        'views_category',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -422,9 +463,10 @@
         },
         perform: function() {
           var noticeOptions = {
+            context:     _context,
             environment: _context.application.environment,
             style:       'banner',
-            headline:    'Get your free pair of flip<br>flops with a $100 purchase',
+            headline:    'Get your free pair of flip<br>flops with a $' + _context.application.qualifyingCartValue + ' purchase',
             buttonText:  'Free flip flops',
             href:        _context.application.specialURL
           };
@@ -450,17 +492,19 @@
   module.exports = ViewsCategory;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],11:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],11:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
 
   var ViewsHome = (function(){
     function ViewsHome(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'views_home';
+
       var _context       = this;
       var contextOptions = {
-        type:        'views_home',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -468,8 +512,9 @@
         },
         perform: function() {
           var noticeOptions = {
+            context:     _context,
             environment: _context.application.environment,
-            headline:    'Get your free pair of flip<br>flops with a $100 purchase',
+            headline:    'Get your free pair of flip<br>flops with a $' + _context.application.qualifyingCartValue + ' purchase',
             buttonText:  'Free flip flops',
             href:        _context.application.specialURL
           };
@@ -495,7 +540,7 @@
   module.exports = ViewsHome;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],12:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],12:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
@@ -503,32 +548,35 @@
   var ViewsProduct = (function(){
     function ViewsProduct(_args) {
       this.application   = _args.application;
+      this.type        = 'views_product';
+
       var _context       = this;
       var contextOptions = {
-        type:        'views_product',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
           return _context.application.routeIsProduct();
         },
         perform: function() {
-          var noticeOptions = {
-            environment: _context.application.environment,
-            style:       'small-banner',
-            headline:    'Get your free pair of flip<br>flops with a $100 purchase',
-            buttonText:  '',
-            href:        _context.application.specialURL
-          };
-
-          var placementOptions = {
-            nextElementSelector: '#mainWrapper .main_content,#view',
-            noticeElement:       new Notice(noticeOptions)
-          };
-
-          _context.application.document.placeNotice(placementOptions);
+          // var noticeOptions = {
+          //   context:     _context,
+          //   environment: _context.application.environment,
+          //   style:       'small-banner',
+          //   headline:    'Get your free pair of flip<br>flops with a $' + _context.application.qualifyingCartValue + ' purchase',
+          //   buttonText:  '',
+          //   href:        _context.application.specialURL
+          // };
+          //
+          // var placementOptions = {
+          //   nextElementSelector: '#mainWrapper .main_content,#view',
+          //   noticeElement:       new Notice(noticeOptions)
+          // };
+          //
+          // _context.application.document.placeNotice(placementOptions);
           _context.application.settings.unsetQualified();
           _context.application.setCoupon(_args.coupon);
-          _context.application.tracking.trackContext(this);
+          // _context.application.tracking.trackContext(this);
         }
       };
 
@@ -541,17 +589,19 @@
   module.exports = ViewsProduct;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],13:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],13:[function(require,module,exports){
 (function() {
   var Context = require('../factories/context');
   var Notice  = require('../factories/notice');
 
   var ViewsSpecialCategory = (function(){
     function ViewsSpecialCategory(_args) {
-      this.application   = _args.application;
+      this.application = _args.application;
+      this.type        = 'views_special_category';
+
       var _context       = this;
       var contextOptions = {
-        type:        'views_special_category',
+        type:        _context.type,
         application: _context.application,
         coupon:      _args.coupon,
         strategy:    function() {
@@ -559,9 +609,10 @@
         },
         perform: function() {
           var noticeOptions = {
+            context:     _context,
             environment: _context.application.environment,
             style:       'anchor-banner',
-            headline:    'Get your free pair of flip<br>flops with a $100 purchase',
+            headline:    'Get your free pair of flip<br>flops with a $' + _context.application.qualifyingCartValue + ' purchase',
             buttonText:  'Choose Your Free flip flops<span class="desktop-only"><br>on this page</span>',
             href:        '#'
           };
@@ -587,7 +638,59 @@
   module.exports = ViewsSpecialCategory;
 }).call(this);
 
-},{"../factories/context":14,"../factories/notice":15}],14:[function(require,module,exports){
+},{"../factories/context":15,"../factories/notice":16}],14:[function(require,module,exports){
+(function() {
+  var Context = require('../factories/context');
+  var Notice  = require('../factories/notice');
+
+  var ViewsProduct = (function(){
+    function ViewsProduct(_args) {
+      this.application   = _args.application;
+      this.type        = 'views_special_product';
+
+      var _context       = this;
+      var contextOptions = {
+        type:        _context.type,
+        application: _context.application,
+        coupon:      _args.coupon,
+        strategy:    function() {
+          return (
+            _context.application.routeIsProduct() &&
+            _context.application.pageIsSpecialProduct()
+          );
+        },
+        perform: function() {
+          var noticeOptions = {
+            context:     _context,
+            environment: _context.application.environment,
+            style:       'small-banner',
+            headline:    'Get this pair of flip<br>flops free with a $' + _context.application.qualifyingCartValue + ' purchase',
+            buttonText:  '',
+            href:        _context.application.specialURL
+          };
+
+          var placementOptions = {
+            nextElementSelector: '#mainWrapper .main_content,#view',
+            noticeElement:       new Notice(noticeOptions)
+          };
+
+          _context.application.document.placeNotice(placementOptions);
+          _context.application.settings.unsetQualified();
+          _context.application.setCoupon(_args.coupon);
+          _context.application.tracking.trackContext(this);
+        }
+      };
+
+      return (new Context(contextOptions));
+    }
+
+    return ViewsProduct;
+  })();
+
+  module.exports = ViewsProduct;
+}).call(this);
+
+},{"../factories/context":15,"../factories/notice":16}],15:[function(require,module,exports){
 (function() {
   var ContextFactory = (function(){
     function ContextFactory(_args) {
@@ -619,15 +722,17 @@
   module.exports = ContextFactory;
 }).call(this);
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
   var NoticeFactory = (function(){
     function NoticeFactory(_args) {
       this.environment    = _args.environment;
+      this.context        = _args.context;
       this.style          = _args.style || '';
       this.headline       = _args.headline;
       this.buttonText     = _args.buttonText;
       this.href           = _args.href;
+
       var noticeContainer = _createNoticeContainer(this);
       var noticeLink      = _createNoticeLink(this);
       var noticeHeadline  = _createNoticeHeadline(this);
@@ -640,29 +745,29 @@
       return noticeContainer;
     }
 
-    var _createNoticeContainer = function(_args) {
-      var noticeContainer       = _args.environment.document.createElement('div');
-      noticeContainer.className = 'flip-flop-notice-container ' + _args.style;
+    var _createNoticeContainer = function(notice) {
+      var noticeContainer       = notice.environment.document.createElement('div');
+      noticeContainer.className = 'flip-flop-notice-container ' + notice.style + ' ' + notice.context.type;
       return noticeContainer;
     };
 
-    var _createNoticeLink = function(_args) {
-      var noticeLink       = _args.environment.document.createElement('a');
+    var _createNoticeLink = function(noice) {
+      var noticeLink       = noice.environment.document.createElement('a');
       noticeLink.className = 'flip-flop-notice-link';
-      noticeLink.href      = _args.href;
+      noticeLink.href      = noice.href;
       return noticeLink;
     };
 
-    var _createNoticeHeadline = function(_args) {
-      var noticeHeadline       = _args.environment.document.createElement('div');
-      noticeHeadline.innerHTML = _args.headline;
+    var _createNoticeHeadline = function(noice) {
+      var noticeHeadline       = noice.environment.document.createElement('div');
+      noticeHeadline.innerHTML = noice.headline;
       noticeHeadline.className = 'flip-flop-notice-headline';
       return noticeHeadline;
     };
 
-    var _createNoticeButton = function(_args) {
-      var noticeButton       = _args.environment.document.createElement('div');
-      noticeButton.innerHTML = _args.buttonText;
+    var _createNoticeButton = function(noice) {
+      var noticeButton       = noice.environment.document.createElement('div');
+      noticeButton.innerHTML = noice.buttonText;
       noticeButton.className = 'flip-flop-notice-button';
       return noticeButton;
     };
@@ -673,7 +778,7 @@
   module.exports = NoticeFactory;
 }).call(this);
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
   var Notifier             = require('./notifier');
   var ApplicationAdapter   = require('./adapters/application_adapter');
@@ -684,6 +789,7 @@
   var ViewsHome            = require('./contexts/views_home');
   var ViewsSpecialCategory = require('./contexts/views_special_category');
   var ViewsCategory        = require('./contexts/views_category');
+  var ViewsSpecialProduct  = require('./contexts/views_special_product');
   var ViewsProduct         = require('./contexts/views_product');
   var DefaultContext       = require('./contexts/default');
 
@@ -696,6 +802,7 @@
       ViewsHome,
       ViewsSpecialCategory,
       ViewsCategory,
+      ViewsSpecialProduct,
       ViewsProduct,
       DefaultContext
     ];
@@ -726,7 +833,7 @@
   module.exports = Loader;
 }).call(this);
 
-},{"./adapters/application_adapter":1,"./contexts/cart_has_other_coupon":5,"./contexts/cart_qualifies":6,"./contexts/cart_with_qualifier":7,"./contexts/cart_without_qualifier":8,"./contexts/default":9,"./contexts/views_category":10,"./contexts/views_home":11,"./contexts/views_product":12,"./contexts/views_special_category":13,"./notifier":18}],17:[function(require,module,exports){
+},{"./adapters/application_adapter":1,"./contexts/cart_has_other_coupon":5,"./contexts/cart_qualifies":6,"./contexts/cart_with_qualifier":7,"./contexts/cart_without_qualifier":8,"./contexts/default":9,"./contexts/views_category":10,"./contexts/views_home":11,"./contexts/views_product":12,"./contexts/views_special_category":13,"./contexts/views_special_product":14,"./notifier":19}],18:[function(require,module,exports){
 (function (global){
 (function() {
   var FlipFlopSpike = require('./loader');
@@ -736,18 +843,18 @@
     if (!('flipFlopSpike' in _environment)) {
       _environment.flipFlopSpike = new FlipFlopSpike({
         environment:         _environment,
-        qualifyingCartValue: 100,
+        qualifyingCartValue: 75,
         settingsKey:         'FlipFlopSpike',
         coupon:              'RNRGIFT',
-        specialURL:          '/redneck-riviera-collection/sandals',
-        tagMatch:            /^redneck\-riviera\-collection/i
+        specialURL:          '/rnr-flip-flops',
+        tagMatch:            /^rnr\-flip\-flops/i
       });
     }
   };
 
   var css    = _environment.document.createElement('link');
-  css.href   = "http://d3v17ilp3z8t74.cloudfront.net/libs/flip-flop-spike/0.1.0b/css/flip-flop-spike.min.css";
-  css.href   = "http://assets.countryoutfitter.com.s3.amazonaws.com/libs/flip-flop-spike/0.1.0b/css/flip-flop-spike.min.css";
+  css.href   = "http://assets.countryoutfitter.com.s3.amazonaws.com/libs/flip-flop-spike/1.0.1/css/flip-flop-spike.min.css";
+  css.href   = "http://d3v17ilp3z8t74.cloudfront.net/libs/flip-flop-spike/1.0.1/css/flip-flop-spike.min.css";
   css.media  = "all";
   css.rel    = "stylesheet";
   css.type   = "text/css";
@@ -757,7 +864,7 @@
 }).call(this);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./loader":16}],18:[function(require,module,exports){
+},{"./loader":17}],19:[function(require,module,exports){
 (function() {
   var Notifier = (function() {
     function Notifier(_args) {
@@ -802,7 +909,7 @@
   module.exports = Notifier;
 }).call(this);
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function() {
   var Storage = (function() {
     function Storage(_args) {
@@ -827,4 +934,4 @@
   module.exports = Storage;
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]);

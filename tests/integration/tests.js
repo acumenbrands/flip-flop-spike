@@ -344,6 +344,58 @@ describe('Context: Category view', function() {
   });
 });
 
+describe('Context: Special product view', function() {
+  before(function() {
+    var specialURL = '/redneck-riviera-collection/sandals';
+    var mockWindow = new MockWindow();
+
+    mockWindow.document.body.classList = ['c-products','a-show','tag-flip-flops'];
+    mockWindow.location.pathname       = '/products/1-sandy-flip-flop';
+    mockWindow.document.cookie         = 'foo=bar; biz=baz';
+
+    var loaderOptions = {
+      coupon:      'THECOUPON',
+      specialURL:  specialURL,
+      environment: mockWindow,
+      tagMatch:    /^flip\-flops/i
+    };
+    this.subject        = new Loader(loaderOptions);
+    this.placeNoticeSpy = sinon.spy(this.subject.context.application.document, 'placeNotice');
+    this.setCouponSpy   = sinon.spy(this.subject.context.application, 'setCoupon');
+  });
+
+  it('performs when route is product route and product is specially tagged', function() {
+    expect(this.subject.context.type).to.equal('views_special_product');
+  });
+  it('places a notification', function() {
+    this.subject.context.perform();
+    expect(this.placeNoticeSpy.called).to.equal(true);
+  });
+  it('sets a coupon', function() {
+    this.subject.context.perform();
+    expect(this.setCouponSpy.called).to.equal(true);
+  });
+  it('tracks the context', function() {
+    var tracker = this.subject.application.environment.dataLayer.pop();
+    expect(tracker.contextType).to.equal(this.subject.context.type);
+  });
+  it('does not perform when product is not tagged with special tag', function() {
+    var notSpecialMockWindow                                        = new MockWindow();
+    notSpecialMockWindow.document.body.classList                    = ['foo'];
+    notSpecialMockWindow.dataLayer[1].behavioralIntent.product.tags = ['blue', 'red'];
+    notSpecialMockWindow.location.pathname       = '/products/1-hoary-bewt';
+    notSpecialMockWindow.document.cookie         = 'foo=bar; biz=baz';
+    var loaderOptions                            = {
+      coupon:      'THECOUPON',
+      specialURL:  '/redneck-riviera-collection/sandals',
+      environment: notSpecialMockWindow,
+      tagMatch:    /^flip\-flops/i
+    };
+    var notSpecialSubject = new Loader(loaderOptions);
+    expect(notSpecialSubject.context.type).to.not.equal('views_special_product');
+  });
+});
+
 describe('Context: Product view', function() {
   before(function() {
     var specialURL    = '/redneck-riviera-collection/sandals';
@@ -365,16 +417,16 @@ describe('Context: Product view', function() {
   it('performs when route is product route', function() {
     expect(this.subject.context.type).to.equal('views_product');
   });
-  it('places a notification', function() {
-    this.subject.context.perform();
-    expect(this.placeNoticeSpy.called).to.equal(true);
-  });
-  it('sets a coupon', function() {
-    this.subject.context.perform();
-    expect(this.setCouponSpy.called).to.equal(true);
-  });
-  it('tracks the context', function() {
-    var tracker = this.subject.application.environment.dataLayer.pop();
-    expect(tracker.contextType).to.equal(this.subject.context.type);
-  });
+  // it('places a notification', function() {
+  //   this.subject.context.perform();
+  //   expect(this.placeNoticeSpy.called).to.equal(true);
+  // });
+  // it('sets a coupon', function() {
+  //   this.subject.context.perform();
+  //   expect(this.setCouponSpy.called).to.equal(true);
+  // });
+  // it('tracks the context', function() {
+  //   var tracker = this.subject.application.environment.dataLayer.pop();
+  //   expect(tracker.contextType).to.equal(this.subject.context.type);
+  // });
 });
