@@ -155,6 +155,6 @@ module.exports = function(grunt) {
   grunt.registerTask('export', ['uglify', 'cssmin', 'img']);
 
   grunt.registerTask('default', ['test', 'export']);
-  grunt.registerTask('aws', ['s3', 'cloudfront']);
-  grunt.registerTask('deploy:production', ['default', 'aws']);
+  grunt.registerTask('production:deploy', ['default', 's3']);
+  grunt.registerTask('production:cache:destroy', ['cloudfront']);
 };
